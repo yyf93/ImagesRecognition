@@ -3,13 +3,11 @@ import datetime
 import params
 
 
-
 def getChineseName(engName):
     """
     英文名转中文名
     """
     return params.chinese_english_map[engName]
-
 
 
 def getCurrentTimeStr():
@@ -35,11 +33,11 @@ def get_files_and_folder(path, images):
     for root, dirs, filenames in os.walk(path):
         print("--------", root)
         for dir in dirs:
-            files_and_folders = os.listdir(root+'\\'+dir)
+            files_and_folders = os.listdir(root+'/'+dir)
             # 过滤出当前工作目录下的所有文件
-            files_only = [f for f in files_and_folders if os.path.isfile(os.path.join(root+'\\'+dir, f))]
+            files_only = [f for f in files_and_folders if os.path.isfile(os.path.join(root+'/'+dir, f))]
             for filename in files_only:
-                full_path = root +'\\'+ dir +'\\'+ filename
+                full_path = root + '/' + dir + '/' + filename
                 # print('---------------------', full_path)
                 images.append(full_path)
     return images

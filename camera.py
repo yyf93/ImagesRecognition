@@ -17,7 +17,6 @@ def capturePhoto():
     ret, frame = cap.read()
     file_name = './tmp/camera_%s.jpg' % time.time()
     if ret == True:
-
         # # 按下s键拍照并保存
         # if cv2.waitKey(1) & 0xFF == ord('s'):
             # 将当前帧保存为照片
