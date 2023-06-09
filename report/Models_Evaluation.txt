@@ -11,11 +11,6 @@ KNN：
    macro avg       0.92      0.84      0.84        40
 weighted avg       0.91      0.88      0.86        40
 
-[[11  0  0  0]
- [ 5  3  0  0]
- [ 0  0  8  0]
- [ 0  0  0 13]]
-
     -- sift + hist --
                   precision    recall  f1-score   support
 
@@ -27,12 +22,6 @@ weighted avg       0.91      0.88      0.86        40
     accuracy                           1.00        40
    macro avg       1.00      1.00      1.00        40
 weighted avg       1.00      1.00      1.00        40
-
-[[11  0  0  0]
- [ 0  8  0  0]
- [ 0  0  8  0]
- [ 0  0  0 13]]
-
 
  SVM：
     -- Only sift --
@@ -48,10 +37,6 @@ weighted avg       1.00      1.00      1.00        40
    macro avg       0.92      0.92      0.92        40
 weighted avg       0.93      0.93      0.93        40
 
-[[ 9  2  0  0]
- [ 1  7  0  0]
- [ 0  0  8  0]
- [ 0  0  0 13]]
 
     -- sift + hist --
                   precision    recall  f1-score   support
@@ -65,9 +50,54 @@ weighted avg       0.93      0.93      0.93        40
    macro avg       1.00      1.00      1.00        40
 weighted avg       1.00      1.00      1.00        40
 
-[[11  0  0  0]
- [ 0  8  0  0]
- [ 0  0  8  0]
- [ 0  0  0 13]]
 
- 数据很好看但是验证集上面测试出来的准确率不高。
+------------------- sift + hist -------------------
+----- KNN -----
+              precision    recall  f1-score   support
+
+           0       1.00      1.00      1.00        11
+           1       1.00      1.00      1.00         8
+           2       1.00      1.00      1.00         8
+           3       1.00      1.00      1.00        13
+
+    accuracy                           1.00        40
+   macro avg       1.00      1.00      1.00        40
+weighted avg       1.00      1.00      1.00        40
+
+----- SVM -----
+              precision    recall  f1-score   support
+
+           0       1.00      1.00      1.00        11
+           1       1.00      1.00      1.00         8
+           2       1.00      1.00      1.00         8
+           3       1.00      1.00      1.00        13
+
+    accuracy                           1.00        40
+   macro avg       1.00      1.00      1.00        40
+weighted avg       1.00      1.00      1.00        40
+
+----- DecisionTree -----
+              precision    recall  f1-score   support
+
+           0       0.91      0.91      0.91        11
+           1       1.00      1.00      1.00         8
+           2       0.88      0.88      0.88         8
+           3       1.00      1.00      1.00        13
+
+    accuracy                           0.95        40
+   macro avg       0.95      0.95      0.95        40
+weighted avg       0.95      0.95      0.95        40
+
+----- RandomForest -----
+              precision    recall  f1-score   support
+
+           0       1.00      1.00      1.00        11
+           1       1.00      1.00      1.00         8
+           2       1.00      1.00      1.00         8
+           3       1.00      1.00      1.00        13
+
+    accuracy                           1.00        40
+   macro avg       1.00      1.00      1.00        40
+weighted avg       1.00      1.00      1.00        40
+
+

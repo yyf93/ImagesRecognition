@@ -1,6 +1,7 @@
-import cv2
 import numpy as np
 from sklearn.neighbors import KNeighborsClassifier
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.tree import DecisionTreeClassifier
 from sklearn.svm import SVC
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import classification_report, confusion_matrix
@@ -94,27 +95,48 @@ def train_books_sklearn_models(image_paths, features=100, features_per=0.9):
 
     np_sift_images = np.array(new_sift_features).astype(np.float32)
     np_labels = np.array(new_labels).astype(np.int32)
-    # 训练分类器
+    # 切割数据集
     X_train, X_test, y_train, y_test = train_test_split(np_sift_images, np_labels, test_size=0.2, random_state=42)
+
+    # 训练分类器
     knn = KNeighborsClassifier(n_neighbors=len(set(np_labels)), metric='euclidean')
     knn.fit(X_train, y_train)
 
-    # Models_Evaluation.txt
-    y_pred = knn.predict(X_test)
-    print(classification_report(y_test, y_pred))
-    print(confusion_matrix(y_test, y_pred))
-
-    with open('./models/books_sklearn_knn_sift_hist.pkl', 'wb') as file:
-        pickle.dump(knn, file)
     svm = SVC(kernel='linear', C=1.0)
     svm.fit(X_train, y_train)
 
-    # Models_Evaluation.txt
-    y_pred = svm.predict(X_test)
-    print(classification_report(y_test, y_pred))
-    print(confusion_matrix(y_test, y_pred))
-    with open('./models/books_sklearn_svm_linear_sift_hist.pkl', 'wb') as file:
+    decision_tree = DecisionTreeClassifier()
+    decision_tree.fit(X_train, y_train)
+
+    random_forest = RandomForestClassifier(n_estimators=200)
+    random_forest.fit(X_train, y_train)
+
+    # 模型评估
+    knn_y_pred = knn.predict(X_test)
+    print('----- KNN -----')
+    print(classification_report(y_test, knn_y_pred))
+
+    svm_y_pred = svm.predict(X_test)
+    print('----- SVM -----')
+    print(classification_report(y_test, svm_y_pred))
+
+    decision_tree_y_pred = decision_tree.predict(X_test)
+    print('----- DecisionTree -----')
+    print(classification_report(y_test, decision_tree_y_pred))
+
+    random_forest_y_pred = svm.predict(X_test)
+    print('----- RandomForest -----')
+    print(classification_report(y_test, random_forest_y_pred))
+
+    # 模型保存
+    with open('./models/books_sklearn_knn_sift_hist.pkl', 'wb') as file:
         pickle.dump(knn, file)
+    with open('./models/books_sklearn_svm_linear_sift_hist.pkl', 'wb') as file:
+        pickle.dump(svm, file)
+    with open('./models/books_sklearn_decision_tree_sift_hist.pkl', 'wb') as file:
+        pickle.dump(decision_tree, file)
+    with open('./models/books_sklearn_random_forest_sift_hist.pkl', 'wb') as file:
+        pickle.dump(random_forest, file)
 
 
 def testBooksSklearnModels(image_path, features=100, features_per=0.9):
@@ -141,7 +163,7 @@ if __name__ == '__main__':
     images = []
     images = common.get_files_and_folder('./images/train_books', images)
     print("共计 %s 数据" % len(images))
-    train_books_resnet_model(images)
+    # train_books_resnet_model(images)
     train_books_sklearn_models(images)
     # testBooksSklearnModels('./images/test_books/dazhanjiqixuexi_0.jpg')
     # testBooksSklearnModels('./images/test_books/manhuasuanfa_0.jpg')
