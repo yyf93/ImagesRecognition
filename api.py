@@ -2,7 +2,9 @@ import cv2
 import numpy as np
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.svm import SVC
+import pickle
 
+import common
 import params
 import image_extract_features
 
@@ -55,21 +57,23 @@ def predict_knn_sklearn(img_path, features=100, features_per=0.9):
     '''
     knn sklearn
     '''
-    knn = KNeighborsClassifier(n_neighbors=len(set(params.book_label_mapping.keys())), metric='euclidean')
+    with open('./models/books_sklearn_knn_sift_hist.pkl', 'rb') as file:
+        knn = pickle.load(file)
     knn_features = np.array(image_extract_features.extract_opencv_features(img_path, features, features_per)).astype(np.float32)
-    knn_pred = knn.predict(knn_features)
-    return knn_pred, 0
+    knn_pred = knn.predict([knn_features])
+    return params.book_label_mapping[str(knn_pred[0])], 0
 
 
 def predict_svm_sklearn(img_path, features=100, features_per=0.9):
     '''
     svm sklearn
     '''
-    svm = SVC(kernel='linear', C=1.0)
+    with open('./models/books_sklearn_svm_linear_sift_hist.pkl', 'rb') as file:
+        svm = pickle.load(file)
     svm_features = np.array(image_extract_features.extract_opencv_features(img_path, features, features_per)).astype(
         np.float32)
-    svm_pred = svm.predict(svm_features)
-    return svm_pred, 0
+    svm_pred = svm.predict([svm_features])
+    return params.book_label_mapping[str(svm_pred[0])], 0
 
 
 def predict_cv2_lbphface(img_path):
@@ -80,8 +84,7 @@ def predict_cv2_lbphface(img_path):
     model_lbphface = cv2.face.LBPHFaceRecognizer_create()
     ## LBPHFACE
     model_lbphface.read(params.model_faces_cv2_lbphface)
-    test_img = cv2.imread(img_path)
-    face = image_extract_features.extract_face_haarcascade_features(test_img)
+    face = image_extract_features.extract_face_haarcascade_features(img_path)
     if face is not None:
         label, confidence = model_lbphface.predict(face)
         return params.face_label_mapping[str(label)], confidence

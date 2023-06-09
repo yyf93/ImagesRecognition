@@ -1,14 +1,16 @@
 import requests
-import sys
 import camera
 import api
 
 
-_BASE_URL = 'http://101.34.206.191:9898/'
-# _BASE_URL = 'http://127.0.0.1:9898/'
+# _BASE_URL = 'http://101.34.206.191:9898/'
+_BASE_URL = 'http://127.0.0.1:5000/'
 
 
 def classify_book_image(file_path=None):
+    '''
+    client识别书籍图像
+    '''
     # classify_books
     url = f'{_BASE_URL}classify_book'  # 服务端的URL
     #print(url)
@@ -23,12 +25,15 @@ def classify_book_image(file_path=None):
     response = requests.post(url, files=files)
     # 解析响应数据
     result = response.json()
-    if result is not None :
+    if result is not None:
         book = api.getMaxConfidenceBooks(result)
     return book
 
 
 def classify_people_image(file_path=None):
+    '''
+    client识别人脸图像
+    '''
     # classify_books
     url = f'{_BASE_URL}classify_people'  # 服务端的URL
     #print(url)

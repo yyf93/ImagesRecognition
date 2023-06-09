@@ -2,6 +2,7 @@ import torchvision.transforms as transforms
 from PIL import Image
 from sklearn.preprocessing import normalize
 import cv2
+import torch
 
 
 def extract_face_haarcascade_features(img_path):
