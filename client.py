@@ -1,18 +1,14 @@
 import requests
 import camera
 import api
-
-
-# _BASE_URL = 'http://101.34.206.191:9898/'
-_BASE_URL = 'http://127.0.0.1:9898/'
-
+import params
 
 def classify_book_image(file_path=None):
     '''
     client识别书籍图像
     '''
     # classify_books
-    url = f'{_BASE_URL}classify_book'  # 服务端的URL
+    url = f'{params._BASE_URL}classify_book'  # 服务端的URL
     #print(url)
     book = ['Unknown']
     if file_path is None:
@@ -36,7 +32,7 @@ def classify_people_image(file_path=None):
     client识别人脸图像
     '''
     # classify_books
-    url = f'{_BASE_URL}classify_people'  # 服务端的URL
+    url = f'{params._BASE_URL}classify_people'  # 服务端的URL
     #print(url)
     face = ['Unknown']
     if file_path is None:

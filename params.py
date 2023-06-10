@@ -1,3 +1,6 @@
+# _BASE_URL = 'http://101.34.206.191:9898/'
+_BASE_URL = 'http://127.0.0.1:9898/'
+
 chinese_english_map = {'huobiyuweilai': '货币未来', 'manhuasuanfa': '漫画算法', 'bailuyuan': '白鹿原', 'dazhanjiqixuexi': 'Python大战机器学习',
                        'lj': '陆老板', 'lt': '李桃', 'hjs': '黄季盛', 'jbc': '贾博淳', 'yyf': '于一飞', 'Unknown': '不认识'}
 
