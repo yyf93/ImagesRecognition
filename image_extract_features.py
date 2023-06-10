@@ -1,28 +1,31 @@
-import torchvision.transforms as transforms
-from PIL import Image
-from sklearn.preprocessing import normalize
 import cv2
-import torch
+
+import params
 
 
 def extract_face_haarcascade_features(img_path):
     '''
     用haarcascade_frontalface_default.xml去图中截取人脸
     '''
+    faces_features = []
     image = cv2.cvtColor(cv2.imread(img_path), cv2.COLOR_BGR2GRAY)
-    face = None
     # Haar特征文件路径
     haar_face_cascade = cv2.CascadeClassifier('./models/haarcascade_frontalface_default.xml')
     faces = haar_face_cascade.detectMultiScale(image, 1.3, 5)
+    len_faces = len(faces)
+    print(f'{img_path} find {len_faces} faces!!')
     for (x, y, w, h) in faces:
-        face = image[y:y + h, x:x + w]
-    return face
+        faces_features.append(image[y:y + h, x:x + w])
+    return faces_features
 
 
 def extract_resnet_features(image_path, model):
     '''
     加载书籍图像并进行特征提取
     '''
+    import torchvision.transforms as transforms
+    from PIL import Image
+    import torch
     image = Image.open(image_path).convert('RGB')
     preprocess = transforms.Compose([
         transforms.Resize(256),
@@ -41,6 +44,7 @@ def extract_color_histogram(image):
     '''
     Opencv获取颜色直方图进行特征提取
     '''
+    from sklearn.preprocessing import normalize
     # 将图像转换为HSV颜色空间
     image_hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
     # 计算颜色直方图
@@ -62,10 +66,13 @@ def merge_features_sift_hist(sift_features, hist_features):
     return features
 
 
-def extract_opencv_features(image_path, features, features_per):
+def extract_opencv_features(image_path):
     '''
     加载图像并用opencv进行特征提取， sift+hist
     '''
+    from sklearn.preprocessing import normalize
+    features = params.features_cv2_sift_nums
+    features_per = params.features_cv2_sift_percent
     get_feature_nums = int(features_per * features)
     sift = cv2.SIFT_create(nfeatures=features)
     org_image = cv2.imread(image_path)

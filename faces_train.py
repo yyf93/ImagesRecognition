@@ -38,8 +38,8 @@ def train_faces_cv2_model(images):
         img_path = img_path.replace('\\', '/')
         dir = img_path.split('/')[-2]
         print(f'{img_path} -- {dir}')
-        face = image_extract_features.extract_face_haarcascade_features(img_path)
-        if face is not None:
+        face = image_extract_features.extract_face_haarcascade_features(img_path)[0]
+        if len(face) != 0:
             new_images.append(face)
             label_read = common.reverseDict(params.face_label_mapping)[dir]
             new_labels.append(label_read)
@@ -63,10 +63,11 @@ def test_faces_cv2_model(img_path):
     recognizer = cv2.face.LBPHFaceRecognizer_create()
     recognizer.read('./models/face_cv2_lbphface_sift.xml')
     # 测试模型
-    face = image_extract_features.extract_face_haarcascade_features(img_path)
-    if face is not None:
-        label, confidence = recognizer.predict(face)
-        print(f'Label: {label} | Confidence: {confidence}')
+    faces = image_extract_features.extract_face_haarcascade_features(img_path)
+    if len(faces) > 0 :
+        for face in faces:
+            label, confidence = recognizer.predict(face)
+            print(f'Label: {label} | Confidence: {confidence}')
     else:
         print(f'can\'t get {img_path} face...')
 
@@ -134,9 +135,9 @@ def test_faces_face_recognition_model(img_path):
 if __name__ == '__main__':
     # 读取图像数据集和标签
     images = []
-    images = common.get_files_and_folder('./images/train_faces', images)
+    images = common.get_files_and_folder('C:/Users/Administrator/Desktop/ImagesRecognition/images/train_faces', images)
     print("共计 %s 数据" % len(images))
     train_faces_face_recognition_model(images)
     # testFacesFaceRegonModels('./images/test_faces/yyf_0.jpg')
-    train_faces_cv2_model(images)
+    # train_faces_cv2_model(images)
     # testFacesCV2Models('./images/test_faces/yyf_0.jpg')

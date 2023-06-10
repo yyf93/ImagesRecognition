@@ -6,10 +6,15 @@ face_label_mapping = {'0': 'lj', '1': 'lt', '2': 'hjs', '3': 'jbc', '4': 'yyf'}
 
 model_haar_face_cascade = './models/haarcascade_frontalface_default.xml'
 
-model_faces_cv2_lbphface = './models/face_cv2_lbphface_sift.xml'
-model_books_cv2_knn = './models/books_cv2_knn_sift_hist.xml'
-model_books_cv2_svm = './models/books_cv2_svm_linear_sift_hist.xml'
-model_books_torch_resnet = './models/books_torch_resnet152_rgb.pth'
+features_cv2_sift_nums = 100
+features_cv2_sift_percent = 0.9
+
+model_cv2_faces_lbphface = './models/face_cv2_lbphface_sift.xml'
+model_cv2_books_knn = './models/books_sklearn_knn_sift_hist.pkl'
+model_cv2_books_svm = './models/books_sklearn_svm_linear_sift_hist.pkl'
+model_cv2_books_decision_tree = './models/books_sklearn_decision_tree_sift_hist.pkl'
+model_cv2_books_random_forest = './models/books_sklearn_random_forest_sift_hist.pkl'
+model_torch_books_resnet = './models/books_torch_resnet152_rgb.pth'
 
 params_face_recognition_faces_encoding = './models/face_face_recognition_faces_encodings.npy'
 params_face_recognition_faces_names = './models/face_face_recognition_faces_names.npy'

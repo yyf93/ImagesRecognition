@@ -20,13 +20,10 @@ def classify_book():
     # 在这里添加处理文件的代码，例如进行图像识别或特征提取, 只提取书籍特征部分
     flag, file_path = api.pre_get_book(tmp_path)
     if flag:
-       knn_result, knn_confidence = api.predict_knn_sklearn(file_path)
-       svm_result, svm_confidence = api.predict_svm_sklearn(file_path)
-       resnet_result, resnet_confidence = api.predict_resnet(file_path)
+       sklearn_result = api.predict_sklearn_books_models(file_path)
+       resnet_result = api.predict_resnet(file_path)
     # 返回处理结果给客户端
-    response = {'knn_result': knn_result, 'svm_result': svm_result, 'resnet_result': resnet_result,
-                'resnet_confidence': str(resnet_confidence), 'svm_confidence': str(svm_confidence),
-                'knn_confidence': str(knn_confidence)}
+    response = {'sklearn_result': sklearn_result, 'resnet_result': resnet_result}
     print(response)
     return jsonify(response)
 
@@ -39,18 +36,15 @@ def classify_people():
     file = request.files['image']
     file.save(tmp_path)
     lbphface_result = ''
-    lbphface_confidence = ''
     face_recognition_label_result = ''
-    face_recognition_confidence = ''
     # 在这里添加处理文件的代码，例如进行图像识别或特征提取
     flag, face_path = api.pre_get_face(tmp_path)
     if flag:
-        lbphface_result, lbphface_confidence = api.predict_cv2_lbphface(face_path)
-        face_recognition_label_result, face_recognition_confidence = api.predict_face_recongnition(face_path)
+        lbphface_result = api.predict_cv2_lbphface(face_path)
+        face_recognition_label_result = api.predict_face_recongnition(face_path)
     # 返回处理结果给客户端
-    response = {'lbphface_result': lbphface_result, 'lbphface_confidence': str(lbphface_confidence),
-                'face_recognition_label_result': face_recognition_label_result,
-                'face_recognition_confidence': str(face_recognition_confidence)}
+    response = {'lbphface_result': lbphface_result,
+                'face_recognition_label_result': face_recognition_label_result}
     print(response)
     return jsonify(response)
 

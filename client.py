@@ -4,7 +4,7 @@ import api
 
 
 # _BASE_URL = 'http://101.34.206.191:9898/'
-_BASE_URL = 'http://127.0.0.1:5000/'
+_BASE_URL = 'http://127.0.0.1:9898/'
 
 
 def classify_book_image(file_path=None):
@@ -25,8 +25,9 @@ def classify_book_image(file_path=None):
     response = requests.post(url, files=files)
     # 解析响应数据
     result = response.json()
+    print(result)
     if result is not None:
-        book = api.getMaxConfidenceBooks(result)
+        book = api.get_book(result)
     return book
 
 
@@ -48,9 +49,9 @@ def classify_people_image(file_path=None):
     response = requests.post(url, files=files)
     # 解析响应数据
     result = response.json()
-
-    if result is not None :
-        face = api.getMaxConfidenceFaces(result)
+    print(result)
+    if result is not None:
+        face = api.get_face(result)
     return face
 
 

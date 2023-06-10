@@ -17,8 +17,6 @@ import image_extract_features
 用各个模型训练图书的分类
 '''
 
-
-
 def train_books_resnet_model(images):
     '''
     加载预训练的ResNet152层模型
@@ -71,7 +69,7 @@ def train_books_resnet_model(images):
     torch.save(classifier.state_dict(), params.model_books_torch_resnet)
 
 
-def train_books_sklearn_models(image_paths, features=100, features_per=0.9):
+def train_books_sklearn_models(image_paths):
     '''
     训练sklearn分类模型并评估
     '''
@@ -83,7 +81,7 @@ def train_books_sklearn_models(image_paths, features=100, features_per=0.9):
         oneImage = oneImage.replace('\\', '/')
         dir = oneImage.split('/')[-2]
         dirs.append(dir)
-        image_features = image_extract_features.extract_opencv_features(oneImage, features, features_per)
+        image_features = image_extract_features.extract_opencv_features(oneImage)
         if len(image_features) > 0:
             print(f'process ===={oneImage}=====')
             new_sift_features.append(image_features)
@@ -129,21 +127,21 @@ def train_books_sklearn_models(image_paths, features=100, features_per=0.9):
     print(classification_report(y_test, random_forest_y_pred))
 
     # 模型保存
-    with open('./models/books_sklearn_knn_sift_hist.pkl', 'wb') as file:
+    with open(params.model_cv2_books_knn, 'wb') as file:
         pickle.dump(knn, file)
-    with open('./models/books_sklearn_svm_linear_sift_hist.pkl', 'wb') as file:
+    with open(params.model_cv2_books_svm, 'wb') as file:
         pickle.dump(svm, file)
-    with open('./models/books_sklearn_decision_tree_sift_hist.pkl', 'wb') as file:
+    with open(params.model_cv2_books_decision_tree, 'wb') as file:
         pickle.dump(decision_tree, file)
-    with open('./models/books_sklearn_random_forest_sift_hist.pkl', 'wb') as file:
+    with open(params.model_cv2_books_random_forest, 'wb') as file:
         pickle.dump(random_forest, file)
 
 
-def testBooksSklearnModels(image_path, features=100, features_per=0.9):
+def testBooksSklearnModels(image_path):
     '''
     验证集测试模型
     '''
-    new_image_features = image_extract_features.extract_opencv_features(image_path, features, features_per)
+    new_image_features = image_extract_features.extract_opencv_features(image_path)
     with open('./models/books_sklearn_knn_sift_hist.pkl', 'rb') as file:
         knn = pickle.load(file)
     with open('./models/books_sklearn_svm_linear_sift_hist.pkl', 'rb') as file:
