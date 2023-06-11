@@ -1,3 +1,5 @@
+图书识别模型评估， 先选取特征去计算其准确率， 发现单一的sift特征不够准确，再用了sift+hist特征， 准确率明显提高。
+具体数据如下：
 KNN：
     -- Only sift --
                   precision    recall  f1-score   support
@@ -101,3 +103,6 @@ weighted avg       0.95      0.95      0.95        40
 weighted avg       1.00      1.00      1.00        40
 
 
+
+人脸识别模型， 没有明确的计算准确率的函数， 我们使用实际情况， 还是face_recognition模型准确率高， 计算时间也较长。
+无具体数据。

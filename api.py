@@ -67,9 +67,12 @@ def predict_common_sklearn(img_path, model_name, results, model_type):
     '''
     with open(model_name, 'rb') as file:
         sklearn_model = pickle.load(file)
-    model_features = np.array(image_extract_features.extract_opencv_features(img_path)).astype(np.float32)
-    model_pred = sklearn_model.predict([model_features])
-    results[model_type] = params.book_label_mapping[str(model_pred[0])]
+    try:
+        model_features = np.array(image_extract_features.extract_opencv_features(img_path)).astype(np.float32)
+        model_pred = sklearn_model.predict([model_features])
+        results[model_type] = params.book_label_mapping[str(model_pred[0])]
+    except Exception as e:
+        results[model_type] = ''
 
 
 def predict_cv2_lbphface(img_path):
@@ -88,7 +91,7 @@ def predict_cv2_lbphface(img_path):
         results[params.face_label_mapping[str(label)]] = str(confidence)
         return results
     else:
-        print(f'can\'t get face')
+        print(f'{img_path} can\'t get face')
         return {'Unknown': '0'}
 
 
@@ -125,15 +128,15 @@ def get_book(json_data):
     根据服务端返回的json解析最可能的图书是谁
     '''
     results = []
-    sklearn_models = ['svm', 'knn', 'decision_tree']
+    sklearn_models = ['svm']
     if json_data is not None:
         sklearn_result = json_data['sklearn_result']
         resnet_result = json_data['resnet_result']
+        for k, v in resnet_result.items():
+            results.append(k)
         for k, v in sklearn_result.items():
             if k in sklearn_models:
                 results.append(v)
-        for k, v in resnet_result.items():
-            results.append(k)
     return list(set(results))
 
 

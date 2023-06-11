@@ -11,21 +11,20 @@ pip install flask opencv-python opencv-contrib-python torch face_recognition sci
 ### 数据预处理
 
 #### ```python image_enhance.py``` 
-可使数据增强， 书籍数据我们增强方式旋转+水平翻转+中值滤波去噪+双边滤波去噪，人脸数据我们增强方式仅水平翻转+中值滤波去噪+双边滤波去噪
+使数据增强书
+籍数据我们增强方式旋转+水平翻转+双边滤波去噪
+人脸数据我们增强方式水平翻转+中值滤波去噪
 
 ### 训练模型
 
 #### ```python books_train.py```
 #### ```python faces_train.py```
-书籍识别用了sklearn的knn和svm,准确率最高的是resnet152模型
-人脸识别用了cv2的lbph_face模型，准确率最高的是face_recognition库下的分类模型， 这个主要是计算最短距离
+书籍识别用了sklearn的很多模型和resnet模型, 评估后, 准确率最高的是resnet152模型
+人脸识别用了cv2的lbph_face模型和face_recognition模型，评估后, 准确率最高的是face_recognition模型
 
 ### 模型评估
 先用测试集和训练集去测试模型的准确率
 再用实际的图片去找到最优模型。
-图书识别模型选用sklearn的knn, svm, decision_tree, 但random_forest模型效果不是很理想
-最主要使用的是torch下的resnet152模型
-人脸识别主要选用face_recognition的人脸识别库, cv2的LBPHFaceRecognizer效果非常不理想
 
 ### 打开服务
 #### ```python server.py```

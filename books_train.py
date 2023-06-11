@@ -17,7 +17,7 @@ import image_extract_features
 用各个模型训练图书的分类
 '''
 
-def train_books_resnet_model(images):
+def train_books_resnet_model(images, train_all=True):
     '''
     加载预训练的ResNet152层模型
     '''
@@ -48,7 +48,9 @@ def train_books_resnet_model(images):
     # 定义损失函数和优化器
     criterion = nn.CrossEntropyLoss()
     optimizer = torch.optim.Adam(classifier.parameters(), lr=0.001)
-
+    if train_all:
+        X_train = np_features
+        y_train = np_labels
     # 训练分类器
     num_epochs = 1000
     for epoch in range(num_epochs):
@@ -66,14 +68,14 @@ def train_books_resnet_model(images):
         accuracy = (predicted == y_test).sum().item() / y_test.size(0)
         print(f"Validation Accuracy: {accuracy}")
     # 保存模型
-    torch.save(classifier.state_dict(), params.model_books_torch_resnet)
+    torch.save(classifier.state_dict(), params.model_torch_books_resnet)
 
 
-def train_books_sklearn_models(image_paths):
+def train_books_sklearn_models(image_paths, train_all=True):
     '''
     训练sklearn分类模型并评估
     '''
-    new_sift_features = []
+    new_features = []
     new_labels = []
     dirs = []
 
@@ -84,17 +86,20 @@ def train_books_sklearn_models(image_paths):
         image_features = image_extract_features.extract_opencv_features(oneImage)
         if len(image_features) > 0:
             print(f'process ===={oneImage}=====')
-            new_sift_features.append(image_features)
+            new_features.append(image_features)
             label_read = common.reverseDict(params.book_label_mapping)[dir]
             new_labels.append(label_read)
         else:
             print(f'Invalid image {oneImage}, skipping...')
             continue
 
-    np_sift_images = np.array(new_sift_features).astype(np.float32)
+    new_features = np.array(new_features).astype(np.float32)
     np_labels = np.array(new_labels).astype(np.int32)
     # 切割数据集
-    X_train, X_test, y_train, y_test = train_test_split(np_sift_images, np_labels, test_size=0.2, random_state=42)
+    X_train, X_test, y_train, y_test = train_test_split(new_features, np_labels, test_size=0.2, random_state=42)
+    if train_all:
+        X_train = new_features
+        y_train = np_labels
 
     # 训练分类器
     knn = KNeighborsClassifier(n_neighbors=len(set(np_labels)), metric='euclidean')
@@ -161,8 +166,8 @@ if __name__ == '__main__':
     images = []
     images = common.get_files_and_folder('./images/train_books', images)
     print("共计 %s 数据" % len(images))
-    # train_books_resnet_model(images)
-    train_books_sklearn_models(images)
+    train_books_resnet_model(images)
+    # train_books_sklearn_models(images)
     # testBooksSklearnModels('./images/test_books/dazhanjiqixuexi_0.jpg')
     # testBooksSklearnModels('./images/test_books/manhuasuanfa_0.jpg')
     # testBooksSklearnModels('./images/test_books/huobiyuweilai_0.jpg')

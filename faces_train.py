@@ -26,7 +26,7 @@ def accuracy_cv2_score(recognizer, X_test, y_test):
     print("Model Accuracy:", accuracy)
 
 
-def train_faces_cv2_model(images):
+def train_faces_cv2_model(images, train_all=True):
     '''
     训练cv2分类模型并评估
     '''
@@ -38,17 +38,21 @@ def train_faces_cv2_model(images):
         img_path = img_path.replace('\\', '/')
         dir = img_path.split('/')[-2]
         print(f'{img_path} -- {dir}')
-        face = image_extract_features.extract_face_haarcascade_features(img_path)[0]
-        if len(face) != 0:
-            new_images.append(face)
-            label_read = common.reverseDict(params.face_label_mapping)[dir]
-            new_labels.append(label_read)
+        faces = image_extract_features.extract_face_haarcascade_features(img_path)
+        if len(faces) > 0:
+            for face in faces:
+                new_images.append(face)
+                label_read = common.reverseDict(params.face_label_mapping)[dir]
+                new_labels.append(label_read)
         else:
             print(f'can\'t get {img_path} face...')
     np_images = np.array(new_images, dtype='object')
     np_labels = np.array(new_labels, dtype=np.int32)
     # 切分数据集
     X_train, X_test, y_train, y_test = train_test_split(np_images, np_labels, test_size=0.2, random_state=42)
+    if train_all:
+        X_train = np_images
+        y_train = np_labels
     recognizer.train(X_train, y_train)
     recognizer.save('./models/face_cv2_lbphface_sift.xml')
     # 评估模型
@@ -79,7 +83,7 @@ def train_faces_face_recognition_model(images):
     # 加载所有人脸图片并获取编码
     known_faces_encodings = []
     known_faces_names = []
-
+    # print(images)
     for img_path in images:
         img_path = img_path.replace('\\', '/')
         dir = img_path.split('/')[-2]
@@ -135,9 +139,9 @@ def test_faces_face_recognition_model(img_path):
 if __name__ == '__main__':
     # 读取图像数据集和标签
     images = []
-    images = common.get_files_and_folder('C:/Users/Administrator/Desktop/ImagesRecognition/images/train_faces', images)
+    images = common.get_files_and_folder('./images/train_faces', images)
     print("共计 %s 数据" % len(images))
-    train_faces_face_recognition_model(images)
+    # train_faces_face_recognition_model(images)
+    train_faces_cv2_model(images)
     # testFacesFaceRegonModels('./images/test_faces/yyf_0.jpg')
-    # train_faces_cv2_model(images)
     # testFacesCV2Models('./images/test_faces/yyf_0.jpg')

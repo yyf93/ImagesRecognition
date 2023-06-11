@@ -49,7 +49,6 @@ def rotated_image(img_path, interval=30):
     return files
 
 
-
 def generate_book_images(img_path):
     '''
     主函数 - 图书增强
@@ -61,7 +60,7 @@ def generate_book_images(img_path):
         img_file_whole_path = files
         for i in rotated_image(img_file_whole_path):
             for j in flip_images(i):
-                remove_noise_images(j)
+                remove_noise_images(j, ['bilateral'])
 
 
 def generate_face_images(img_path):
@@ -73,7 +72,7 @@ def generate_face_images(img_path):
         files = files.replace('\\', '/')
         img_file_whole_path = files
         for j in flip_images(img_file_whole_path):
-            remove_noise_images(j)
+            remove_noise_images(j, ['median'])
 
 
 def flip_images(img_path):
@@ -97,7 +96,7 @@ def flip_images(img_path):
     return files
 
 
-def remove_noise_images(img_path):
+def remove_noise_images(img_path, noises):
     '''
     图像去噪音
     '''
@@ -105,31 +104,35 @@ def remove_noise_images(img_path):
     pre_name = ".".join(img_path.split('.')[:-1])
     # 读取原图像
     img = cv2.imread(img_path)
-    # 高斯滤波去噪
-    # gaussian = cv2.GaussianBlur(img, (5, 5), 0)
-    # 中值滤波去噪
-    median = cv2.medianBlur(img, 5)
-    # 双边滤波去噪
-    bilateral = cv2.bilateralFilter(img, 9, 75, 75)
-    median_filename = f'{pre_name}_medianBlur.jpg'
-    cv2.imwrite(median_filename, median)
-    bilateral_filename = f'{pre_name}_bilateral.jpg'
-    cv2.imwrite(bilateral_filename, bilateral)
-    files.append(median_filename)
-    files.append(bilateral_filename)
-    print(f'save {median_filename}')
-    print(f'save {bilateral_filename}')
-
+    for noise in noises:
+        if noise == 'gaussian':
+            gaussian_filename = f'{pre_name}_gaussian.jpg'
+            # 高斯滤波去噪
+            gaussian = cv2.GaussianBlur(img, (5, 5), 0)
+            cv2.imwrite(gaussian_filename, gaussian)
+            files.append(gaussian_filename)
+            print(f'save {gaussian_filename}')
+        elif noise == 'median':
+            median_filename = f'{pre_name}_medianBlur.jpg'
+            # 中值滤波去噪
+            median = cv2.medianBlur(img, 5)
+            cv2.imwrite(median_filename, median)
+            files.append(median_filename)
+            print(f'save {median_filename}')
+        elif noise == 'bilateral':
+            bilateral_filename = f'{pre_name}_bilateral.jpg'
+            # 双边滤波去噪
+            bilateral = cv2.bilateralFilter(img, 9, 75, 75)
+            cv2.imwrite(bilateral_filename, bilateral)
+            files.append(bilateral_filename)
+            print(f'save {bilateral_filename}')
     return files
-
-
-
 
 
 if __name__ == '__main__':
     path = './images'
     # remove_noise_images('C:\\Users\\Administrator\\Desktop\\ImagesRecognition\\images\\train_books\\bailuyuan\\bailuyuan_0_1.jpg')
-    # generate_book_images(f'{path}/train_books')
+    generate_book_images(f'{path}/train_books')
     generate_face_images(f'{path}/train_faces')
 
 
