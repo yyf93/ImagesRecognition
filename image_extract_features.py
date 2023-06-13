@@ -1,5 +1,4 @@
 import cv2
-
 import params
 
 
@@ -22,15 +21,26 @@ def extract_face_haarcascade_features(img_path):
 def extract_resnet_features(image_path, model):
     '''
     加载书籍图像并进行特征提取
+    - Image.open()打开图片,convert('RGB')转换为RGB模式
+    - transforms对图片进行预处理,包括`Resize`、`CenterCrop`、`ToTensor`和`Normalize`
+    - input_tensor.unsqueeze(0)添加维度,作为模型输入
+    - with torch.no_grad():关闭梯度计算,进行预测
+    - features = model(input_batch)使用模型对图片进行特征提取
+    - return features返回提取到的特征
+    这个函数的总体作用是:加载图片,对图片进行预处理,输入模型进行特征提取,并返回提取到的特征。
     '''
     import torchvision.transforms as transforms
     from PIL import Image
     import torch
     image = Image.open(image_path).convert('RGB')
     preprocess = transforms.Compose([
+        #这是图像预处理的transforms,将图像大小重新调整为256x256
         transforms.Resize(256),
+        #图像中心裁剪出224x224的区域
         transforms.CenterCrop(224),
+        #图像转换为Tensor,并调整其范围到[0, 1]。
         transforms.ToTensor(),
+        #归一化 有利于模型训练- mean=[0.485, 0.456, 0.406]:三个通道的均值。std=[0.229, 0.224, 0.225]:三个通道的标准差
         transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
     ])
     input_tensor = preprocess(image)
