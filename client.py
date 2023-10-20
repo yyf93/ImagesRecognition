@@ -1,7 +1,8 @@
 import requests
-import camera
 import api
+import common
 import params
+
 
 def classify_book_image(file_path=None):
     '''
@@ -9,19 +10,13 @@ def classify_book_image(file_path=None):
     '''
     # classify_books
     url = f'{params._BASE_URL}classify_book'  # 服务端的URL
-    #print(url)
     book = ['Unknown']
-    if file_path is None:
-        file = open(camera.capturePhoto(), 'rb')
-    else:
-        file = open(file_path, 'rb')
-    # 构建请求数据
-    files = {'image': file}
+    # 获取图像流
+    files = common.get_bytes_from_capture_or_file(file_path, 'classify_book')
     # 发送请求
     response = requests.post(url, files=files)
     # 解析响应数据
     result = response.json()
-    print(result)
     if result is not None:
         book = api.get_book(result)
     return book
@@ -31,29 +26,65 @@ def classify_people_image(file_path=None):
     '''
     client识别人脸图像
     '''
-    # classify_books
-    url = f'{params._BASE_URL}classify_people'  # 服务端的URL
+    # classify_face
+    url = f'{params._BASE_URL}classify_face'
     #print(url)
     face = ['Unknown']
-    if file_path is None:
-        file = open(camera.capturePhoto(), 'rb')
-    else:
-        file = open(file_path, 'rb')
-    # 构建请求数据
-    files = {'image': file}
+    # 获取图像流
+    files = common.get_bytes_from_capture_or_file(file_path, 'classify_face')
     # 发送请求
     response = requests.post(url, files=files)
     # 解析响应数据
     result = response.json()
-    print(result)
     if result is not None:
         face = api.get_face(result)
     return face
 
 
+def flow_add_book(file_path=None, isbn=None):
+    '''
+    图书流程-新增书, 流程做到一半TODO!
+    '''
+    url = f'{params._BASE_URL}add_book'  # 服务端的URL
+    # 获取图像流
+    files = common.get_bytes_from_capture_or_file(file_path, 'add_book')
+    data = {'isbn': isbn}
+    # 发送请求
+    response = requests.post(url, files=files, data=data)
+    # 解析响应数据
+    result = response.json()
+    return result
+
+
+def flow_borrow_return_book(book_type, book_name, file_path=None):
+    '''
+    图书流程-借还书
+    '''
+    # borrow/return_books
+    url = f'{params._BASE_URL}{book_type}_book'  # 服务端的URL
+
+    # 获取图像流
+    files = common.get_bytes_from_capture_or_file(file_path, f'{book_type}_book')
+    # 发送请求
+    data = {'book_name': book_name}
+    response = requests.post(url, files=files, data=data)
+
+    # 解析响应数据
+    result = response.json()
+    return result
+
+
 if __name__ == '__main__':
     # file_path = sys.argv[1]
-    book_path = './images/test_books/manhuasuanfa_0.jpg'
+    book_path = './images/test_books/ss.png'
+    #print(classify_book_image(book_path))
     people_path = './images/test_faces/yyf_0.jpg'
-    print(classify_book_image(book_path))
-    print(classify_people_image(people_path))
+    #print(classify_people_image(people_path))
+    img_test = './images/test_books/barcode.jpg'
+    add_img = './images/test_books/barcode3.jpg'
+    #print(flow_borrow_return_book('borrow', '货币未来', file_path=img_test))
+    # print(flow_add_book(img_test, None))
+    # print(flow_add_book(add_img))
+    face_img = './images/test_faces/yyf_0.jpg'
+    # print(classify_book_image(book_path))
+    print(classify_people_image(face_img))

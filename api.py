@@ -1,8 +1,11 @@
+# -*- coding: utf-8 -*-
 import cv2
 import numpy as np
 import pickle
-import params
 import image_extract_features
+from book import *
+from face import *
+
 
 '''
 serverm client用的api
@@ -14,14 +17,18 @@ def pre_get_book(tmp_path):
     '''
     return True, tmp_path
 
+
 def pre_get_face(tmp_path):
     '''
     预处理
     '''
-    return True, tmp_path
+    if image_extract_features.extract_face_from_img_to_file(tmp_path):
+        return tmp_path
+    else:
+        return None
 
 
-def predict_resnet(unknown_image_path):
+def predict_resnet_book(unknown_image_path):
     '''
     RESNET
     '''
@@ -29,24 +36,74 @@ def predict_resnet(unknown_image_path):
     import torch.nn as nn
     import torchvision.models as models
     import torch.nn.functional as F
+    book_tool = BookTool()
     # 加载预训练的ResNet模型
     resnet = models.resnet152(pretrained=True)
-    resnet.fc = nn.Identity()  # 去除最后的全连接层
+    resnet.fc = nn.Identity()
 
+    #加载模型和分类器
+    info_dict = torch.load(params.model_torch_books_resnet)
+    resnet_dict = info_dict["model_state_dict"]
+    classifier_dict = info_dict["classifier_state_dict"]
+    resnet.load_state_dict(resnet_dict, strict=False)
+
+    # 提取特征
     unknown_features = image_extract_features.extract_resnet_features(unknown_image_path, resnet)
 
-    num_classes = len(params.book_label_mapping)
-    # # 构建分类器模型
+    #分类数量
+    num_classes = len(book_tool.all_book_infos)
     classifier = nn.Linear(unknown_features.shape[1], num_classes)  # num_classes为类别的数量
-    #加载模型
-    classifier.load_state_dict(torch.load(params.model_torch_books_resnet))
+    classifier.load_state_dict(classifier_dict)
 
     prediction = classifier(unknown_features)
     probabilities = F.softmax(prediction, dim=1)  # 应用Softmax函数获得概率分布
     predicted_label = torch.argmax(prediction).item()
     confidence = probabilities[0][predicted_label].item()  # 获取预测标签的置信度
+    # 通过uniq_id 返回图书的内容
+    isbn = common.reverse_dict(book_tool.current_book_isbn_id_json)[str(predicted_label)]
+    print(f'predicted_label: {predicted_label} ------  isbn_uniq_id_dict: {book_tool.current_book_isbn_id_json}')
+    return {isbn: confidence}
 
-    return {params.book_label_mapping[str(predicted_label)]: confidence}
+
+def predict_resnet_face(unknown_image_path):
+    '''
+    RESNET
+    '''
+    import torch
+    import torch.nn as nn
+    import torchvision.models as models
+    import torch.nn.functional as F
+    try:
+        face_tool = FaceTool()
+        # 加载预训练的ResNet模型
+        resnet = models.resnet152(pretrained=True)
+        resnet.fc = nn.Identity()
+
+        # 加载模型和分类器
+        info_dict = torch.load(params.model_torch_faces_resnet)
+        resnet_dict = info_dict["model_state_dict"]
+        classifier_dict = info_dict["classifier_state_dict"]
+        resnet.load_state_dict(resnet_dict, strict=False)
+
+        # 提取特征
+        unknown_features = image_extract_features.extract_resnet_features(unknown_image_path, resnet)
+
+        # 分类数量
+        num_classes = len(face_tool.all_face_infos)
+        # print(f'face all class nums: {num_classes}')
+        classifier = nn.Linear(unknown_features.shape[1], num_classes)  # num_classes为类别的数量
+        classifier.load_state_dict(classifier_dict)
+
+        prediction = classifier(unknown_features)
+        probabilities = F.softmax(prediction, dim=1)  # 应用Softmax函数获得概率分布
+        predicted_label = torch.argmax(prediction).item()
+        confidence = probabilities[0][predicted_label].item()  # 获取预测标签的置信度
+        # 通过uniq_id 返回图书的内容
+        face_name = face_tool.uniq_name_dict[str(predicted_label)]
+        print(f'predicted_label: {predicted_label} ------  face_name: {face_name}')
+        return json.dumps({"resnet_result": {face_name: confidence}}, ensure_ascii=False), ""
+    except Exception as e:
+        return None, str(e)
 
 
 def predict_sklearn_books_models(img_path):
@@ -128,19 +185,15 @@ def get_book(json_data):
     根据服务端返回的json解析最可能的图书是谁
     '''
     results = []
-    sklearn_models = ['']
+    #sklearn_models = ['svm']
     if json_data is not None:
-        sklearn_result = json_data['sklearn_result']
+        #sklearn_result = json_data['sklearn_result']
         resnet_result = json_data['resnet_result']
         for k, v in resnet_result.items():
-            if k not in ['', 'Unknown']:
-                results.append(k)
-        for k, v in sklearn_result.items():
-            if k in sklearn_models:
-                if v not in ['', 'Unknown']:
-                    results.append(v)
-    if len(list(set(results))) == 0:
-        results.append('')
+            results.append(k)
+        #for k, v in sklearn_result.items():
+            #if k in sklearn_models:
+                #results.append(v)
     return list(set(results))
 
 
@@ -150,12 +203,77 @@ def get_face(json_data):
     '''
     results = []
     if json_data is not None:
-        face_recognition_label_result = json_data['face_recognition_label_result']
-        for k, v in face_recognition_label_result.items():
+        face_resnet_label_result = json_data['resnet_result']
+        # face_recognition_label_result = json_data['face_recognition_label_result']
+        for k, v in face_resnet_label_result.items():
             results.append(k)
     return list(set(results))
 
 
+def get_borrow_return_book_message(img_path, book_type, book_name):
+    """
+    借还书JSON生成
+    """
+    book_tool = BookTool()
+    return book_tool.get_borrow_return_json_file(img_path, book_type, book_name)
+
+
+def get_book_respone(json_str, content=""):
+    """
+    将server book信息返回给client
+    """
+    if json_str is None:
+        json_str = "{}"
+    message_json = json.loads(json_str)
+    if "imgBytes" in message_json.keys():
+        message_json.pop("imgBytes")
+    print(message_json)
+    if content == "":
+        message_json["is_success"] = "True"
+        message_json["error_message"] = content
+    else:
+        message_json["is_success"] = "False"
+        message_json["error_message"] = content
+    return message_json
+
+
+def get_face_respone(json_str, content=""):
+    """
+    将server face信息返回给client
+    """
+    if json_str is None:
+        json_str = "{}"
+    message_json = json.loads(json_str)
+    print(message_json)
+    if content == "":
+        message_json["is_success"] = "True"
+        message_json["error_message"] = content
+    else:
+        message_json["is_success"] = "False"
+        message_json["error_message"] = content
+    return message_json
+
+
+def get_add_book_message(img_path, isbn):
+    """
+    返回新增书籍的json数据
+    """
+    book_tool = BookTool()
+    if book_tool.is_exit_isbn(isbn):
+        print("已经存在这个isbn， 不需要新增")
+        return None
+    else:
+        return book_tool.get_add_json_file(img_path, isbn)
+
+
 if __name__ == '__main__':
-    print(predict_face_recongnition('./images/test_faces/lj_01.jpg'))
-    print('test')
+    #print(predict_face_recongnition('./images/test_faces/lj_01.jpg'))
+    img_file = './images/test_books/barcode4.jpg'
+    #img_file = './images/train_books/9787506394314/9787506394314_angle60.jpg'
+    #print(predict_resnet_book(img_file))
+    #print(get_add_book_message(img_file, None))
+    face_file = './images/test_faces/pb_0.jpg'
+    pre_get_face(face_file)
+    print(predict_resnet_face(face_file))
+    #print(predict_resnet_face(face_file))
+    #send_email(img_file='./tmp/barcode.jpg', action='borrow', book_id='111', book_name='test')

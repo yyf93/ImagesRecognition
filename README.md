@@ -1,7 +1,7 @@
 # ImagesRecognition
 
 ## 环境要求:
-pip install flask opencv-python opencv-contrib-python torch face_recognition scikit-learn
+    pip install flask opencv-python opencv-contrib-python torch face_recognition scikit-learn pycryptodome
 
 ## 项目简介:
 人脸和图书的图像识别并分类.
@@ -11,8 +11,8 @@ pip install flask opencv-python opencv-contrib-python torch face_recognition sci
 ### 数据预处理
 
 #### ```python image_enhance.py``` 
-使数据增强
-图书数据我们增强方式旋转+水平翻转+双边滤波去噪
+使数据增强书
+籍数据我们增强方式旋转+水平翻转+双边滤波去噪
 人脸数据我们增强方式水平翻转+中值滤波去噪
 
 ### 训练模型
@@ -24,13 +24,13 @@ pip install flask opencv-python opencv-contrib-python torch face_recognition sci
 
 ### 模型评估
 先用测试集和训练集去测试模型的准确率
-再用实际拍的图片去测试模型找到最优模型。
+再用实际的图片去找到最优模型。
 
 ### 打开服务
 #### ```python server.py```
-主要服务就是识别人脸和图书,返回JSON结果
+主要服务就是识别人脸和图书
 
 ### 调用服务
 #### ```python client.py```
-发送请求去获取服务端的分类结
+发送请求去获取服务端的分类结果
 

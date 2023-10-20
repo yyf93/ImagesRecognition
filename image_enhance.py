@@ -1,5 +1,6 @@
 import cv2
 import common
+import image_extract_features
 
 '''
 数据增强 -
@@ -7,7 +8,6 @@ import common
 2. 对图像进行缩放 （不用）
 3. 对图像进行翻转
 4. 对图像进行去噪音
-
 '''
 
 def resize_image(img_path, small_per_list = [0.8, 0.6, 0.4, 0.2]):
@@ -45,7 +45,7 @@ def rotated_image(img_path, interval=30):
         new_img_file_path = f'{pre_name}_angle{angle}.jpg'
         files.append(new_img_file_path)
         cv2.imwrite(new_img_file_path, rotated_img)
-        print(f'save {new_img_file_path}')
+        #print(f'save {new_img_file_path}')
     return files
 
 
@@ -55,7 +55,7 @@ def generate_book_images(img_path):
     注意： 初始化中的文件夹中的子文件夹的照片最好唯一，不然会生成大量的照片！！！
     '''
     # 获取路径下面的子文件夹中的所有文件
-    for files in common.get_files_and_folder(img_path, []):
+    for files in common.get_trains_sub_folder_files(img_path, [], is_enhance=True):
         files = files.replace('\\', '/')
         img_file_whole_path = files
         for i in rotated_image(img_file_whole_path):
@@ -68,11 +68,13 @@ def generate_face_images(img_path):
     主函数 - 人脸增强
     '''
     # 获取路径下面的子文件夹中的所有文件
-    for files in common.get_files_and_folder(img_path, []):
+    for files in common.get_trains_sub_folder_files(img_path, [], is_enhance=True):
         files = files.replace('\\', '/')
         img_file_whole_path = files
-        for j in flip_images(img_file_whole_path):
-            remove_noise_images(j, ['median'])
+        # 将人脸部分从图中提取出来
+        if image_extract_features.extract_face_from_img_to_file(img_file_whole_path):
+            for j in flip_images(img_file_whole_path):
+                remove_noise_images(j, ['median'])
 
 
 def flip_images(img_path):
@@ -92,7 +94,7 @@ def flip_images(img_path):
     filename = f'{pre_name}_flip_horizontal.jpg'
     cv2.imwrite(filename, flip_horizontal)
     files.append(filename)
-    print(f'save {filename}')
+    #print(f'save {filename}')
     return files
 
 
@@ -111,28 +113,28 @@ def remove_noise_images(img_path, noises):
             gaussian = cv2.GaussianBlur(img, (5, 5), 0)
             cv2.imwrite(gaussian_filename, gaussian)
             files.append(gaussian_filename)
-            print(f'save {gaussian_filename}')
+            #print(f'save {gaussian_filename}')
         elif noise == 'median':
             median_filename = f'{pre_name}_medianBlur.jpg'
             # 中值滤波去噪
             median = cv2.medianBlur(img, 5)
             cv2.imwrite(median_filename, median)
             files.append(median_filename)
-            print(f'save {median_filename}')
+            #print(f'save {median_filename}')
         elif noise == 'bilateral':
             bilateral_filename = f'{pre_name}_bilateral.jpg'
             # 双边滤波去噪
             bilateral = cv2.bilateralFilter(img, 9, 75, 75)
             cv2.imwrite(bilateral_filename, bilateral)
             files.append(bilateral_filename)
-            print(f'save {bilateral_filename}')
+            #print(f'save {bilateral_filename}')
     return files
 
 
 if __name__ == '__main__':
     path = './images'
     # remove_noise_images('C:\\Users\\Administrator\\Desktop\\ImagesRecognition\\images\\train_books\\bailuyuan\\bailuyuan_0_1.jpg')
-    generate_book_images(f'{path}/train_books')
+    # generate_book_images(f'{path}/train_books')
     generate_face_images(f'{path}/train_faces')
 
 

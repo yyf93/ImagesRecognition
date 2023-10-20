@@ -1,13 +1,58 @@
 import cv2
 import params
+import common
+
+def extract_face_from_img_to_file(img_path):
+    '''
+    提取图像中的人脸，将数据再写回img中, 只取图中一张脸
+    '''
+    #extract_face_haarcascade_features这个会提取到非人脸的数据， 但是他运行很快，准确率低
+    #facess = extract_face_haarcascade_features(img_path)
+    faces = extract_face_face_recognition_features(img_path)
+    if len(faces) > 0:
+        for ele in faces:
+            cv2.imwrite(img_path, ele)
+            return True
+    else:
+        common.delete_file(img_path)
+        print(f"该图片 {img_path} - 无法提取人脸")
+        return False
 
 
-def extract_face_haarcascade_features(img_path):
+def extract_face_face_recognition_features(img_path, is_color=True):
+    import face_recognition
     '''
     用haarcascade_frontalface_default.xml去图中截取人脸
     '''
     faces_features = []
-    image = cv2.cvtColor(cv2.imread(img_path), cv2.COLOR_BGR2GRAY)
+    # 加载图像并识别人脸
+    face = face_recognition.load_image_file(img_path)
+    face_locations = face_recognition.face_locations(face)
+
+    # 使用opencv加载原始图像
+    if is_color:
+        image = cv2.imread(img_path)
+    else:
+        image = cv2.cvtColor(cv2.imread(img_path), cv2.COLOR_BGR2GRAY)
+
+    # 遍历每个识别到的人脸，并保存为新的图片
+    for i, (top, right, bottom, left) in enumerate(face_locations):
+        # 提取人脸
+        face_image = image[top:bottom, left:right]
+        faces_features.append(face_image)
+    return faces_features
+
+
+def extract_face_haarcascade_features(img_path, is_color=True):
+    '''
+    用haarcascade_frontalface_default.xml去图中截取人脸
+    '''
+    faces_features = []
+    # 读取灰色的话 cv2.cvtColor(cv2.imread(img_path), cv2.COLOR_BGR2GRAY)
+    if is_color:
+        image = cv2.imread(img_path)
+    else:
+        image = cv2.cvtColor(cv2.imread(img_path), cv2.COLOR_BGR2GRAY)
     # Haar特征文件路径
     haar_face_cascade = cv2.CascadeClassifier('./models/haarcascade_frontalface_default.xml')
     faces = haar_face_cascade.detectMultiScale(image, 1.3, 5)
@@ -21,26 +66,15 @@ def extract_face_haarcascade_features(img_path):
 def extract_resnet_features(image_path, model):
     '''
     加载书籍图像并进行特征提取
-    - Image.open()打开图片,convert('RGB')转换为RGB模式
-    - transforms对图片进行预处理,包括`Resize`、`CenterCrop`、`ToTensor`和`Normalize`
-    - input_tensor.unsqueeze(0)添加维度,作为模型输入
-    - with torch.no_grad():关闭梯度计算,进行预测
-    - features = model(input_batch)使用模型对图片进行特征提取
-    - return features返回提取到的特征
-    这个函数的总体作用是:加载图片,对图片进行预处理,输入模型进行特征提取,并返回提取到的特征。
     '''
     import torchvision.transforms as transforms
     from PIL import Image
     import torch
     image = Image.open(image_path).convert('RGB')
     preprocess = transforms.Compose([
-        #这是图像预处理的transforms,将图像大小重新调整为256x256
         transforms.Resize(256),
-        #图像中心裁剪出224x224的区域
         transforms.CenterCrop(224),
-        #图像转换为Tensor,并调整其范围到[0, 1]。
         transforms.ToTensor(),
-        #归一化 有利于模型训练- mean=[0.485, 0.456, 0.406]:三个通道的均值。std=[0.229, 0.224, 0.225]:三个通道的标准差
         transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
     ])
     input_tensor = preprocess(image)
